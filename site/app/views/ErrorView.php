@@ -30,10 +30,14 @@ class ErrorView extends AbstractView {
     }
 
     public function noAccessCourse() {
+        $user = $this->course->getUser();
+        $registration_section = $user->getRegistrationSection();
+        
         return $this->core->getOutput()->renderTwigTemplate("error/NoAccessCourse.twig", [
             "course_name" => $this->core->getDisplayedCourseName(),
             "semester" => $this->core->getFullSemester(),
-            "main_url" => $this->core->getConfig()->getBaseUrl()
+            "main_url" => $this->core->getConfig()->getBaseUrl(),
+            "ability_to_readd" => false
         ]);
     }
 
