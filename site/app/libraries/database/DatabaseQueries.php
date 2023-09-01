@@ -424,9 +424,9 @@ SQL;
 
     /**
      * Returns the date of the current term's start date.
-     * @param Date - The start date of the current term.
+     * @param string The start date of the current term.
      */
-    public function getCurrentTermStartDate(): Date {
+    public function getCurrentTermStartDate(): string {
         $this->submitty_db->query("
             SELECT start_date
             FROM terms
@@ -8636,11 +8636,11 @@ SQL;
 
     /**
      * Returns the last time a particular user accessed any gradeable in the current course.
-     * @param string $user_id - The user we are querying.
-     * @return Data|string - Date if the student ever accessed the course,
+     * @param string $user_id The user we are querying.
+     * @return string Date if the student ever accessed the course,
      *   "Never accessed a gradeable" otherwise.
      */
-    public function getMostRecentGradeableAccessForUser(string $user_id): Date|string {
+    public function getMostRecentGradeableAccessForUser(string $user_id): string {
         $this->course_db->query("
             SELECT timestamp
             FROM gradeable_access where user_id=?

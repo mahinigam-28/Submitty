@@ -2,6 +2,8 @@
 
 namespace app\views;
 
+use app\libraries\DateUtils;
+
 class ErrorView extends AbstractView {
     public function exceptionPage($error_message) {
         return $this->core->getOutput()->renderTwigTemplate("error/ExceptionPage.twig", [
@@ -30,20 +32,40 @@ class ErrorView extends AbstractView {
     }
 
     public function noAccessCourse() {
-        $user = $this->core->getUser();
-        $user_id = $user->getId();
-        $registration_section = $user->getRegistrationSection();
-        $most_recent_access = $this->core->getQueries()->getMostRecentGradeableAccessForUser($user_id);
-
-        $term_start_date = $this->core->getQueries()->getCurrentTermStartDate();
-
-        
         return $this->core->getOutput()->renderTwigTemplate("error/NoAccessCourse.twig", [
             "course_name" => $this->core->getDisplayedCourseName(),
             "semester" => $this->core->getFullSemester(),
             "main_url" => $this->core->getConfig()->getBaseUrl(),
-            "ability_to_readd" => false
+            "ability_to_readd" => $this->canRejoinCourse()
         ]);
+    }
+
+    /** 
+     * Returns if the user is allowed to self-readd to a course after being dropped.
+     * @param bool True if can readd, false otherwise.
+     */
+    private function canRejoinCourse() {
+        $user = $this->core->getUser();
+
+        // If manually removed from course, this was probably intentional removal.
+        if ($user->isManualRegistration()) {
+            return false;
+        }
+
+        $user_id = $user->getId();
+        $most_recent_access = $this->core->getQueries()->getMostRecentGradeableAccessForUser($user_id);
+        // If removed from course within last 3 days, can readd self.
+        if (DateUtils::calculateDayDiff($most_recent_access) <= 3) {
+            return true;
+        }
+
+        $term_start_date = $this->core->getQueries()->getCurrentTermStartDate();
+        // If never accessed course but is within first two weeks of term, can readd self.
+        if (DateUtils::calculateDayDiff($most_recent_access, $term_start_date) <= 14) {
+            return true;
+        }
+
+        return false;
     }
 
     public function unbuiltGradeable($gradeable_title) {
