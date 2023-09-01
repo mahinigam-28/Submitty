@@ -423,6 +423,21 @@ SQL;
     }
 
     /**
+     * Returns the date of the current term's start date.
+     * @param Date - The start date of the current term.
+     */
+    public function getCurrentTermStartDate(): Date {
+        $this->submitty_db->query("
+            SELECT start_date
+            FROM terms
+            ORDER BY start_date DESC
+            LIMIT 1
+        ");
+        $timestamp = $this->submitty_db->rows()[0]['start_date'];
+        return DateUtils::convertTimeStamp($this->core->getUser(), $timestamp, 'Y-m-d H:i:s');
+    }
+
+    /**
      * @param string $term_id
      * @param string $term_name
      * @param \DateTime $start_date
@@ -8618,6 +8633,13 @@ SQL;
         $this->course_db->query($query, [$g_id, $user_id, $team_id, $accessor_id, $this->core->getDateTimeNow()]);
     }
 
+
+    /**
+     * Returns the last time a particular user accessed any gradeable in the current course.
+     * @param string $user_id - The user we are querying.
+     * @return Data|string - Date if the student ever accessed the course,
+     *   "Never accessed a gradeable" otherwise.
+     */
     public function getMostRecentGradeableAccessForUser(string $user_id): Date|string {
         $this->course_db->query("
             SELECT timestamp

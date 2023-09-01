@@ -34,6 +34,9 @@ class ErrorView extends AbstractView {
         $user_id = $user->getId();
         $registration_section = $user->getRegistrationSection();
         $most_recent_access = $this->core->getQueries()->getMostRecentGradeableAccessForUser($user_id);
+
+        $term_start_date = $this->core->getQueries()->getCurrentTermStartDate();
+
         
         return $this->core->getOutput()->renderTwigTemplate("error/NoAccessCourse.twig", [
             "course_name" => $this->core->getDisplayedCourseName(),
