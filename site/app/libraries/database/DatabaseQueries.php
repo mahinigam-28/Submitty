@@ -8618,6 +8618,23 @@ SQL;
         $this->course_db->query($query, [$g_id, $user_id, $team_id, $accessor_id, $this->core->getDateTimeNow()]);
     }
 
+    public function getMostRecentGradeableAccessForUser(string $user_id): Date|string {
+        $this->course_db->query("
+            SELECT timestamp
+            FROM gradeable_access where user_id=?
+            ORDER BY timestamp desc
+            LIMIT 1",
+            [$user_id]
+        );
+        $response = $this->course_db->rows();
+        if (empty($response)) {
+            return "Never accessed a gradeable";
+        }
+
+        $timestamp = $response[0]['timestamp'];
+        return DateUtils::convertTimeStamp($this->core->getUser(), $timestamp, 'Y-m-d H:i:s');
+    }
+
     public function getGradeableAccessUser(
         string $g_id,
         string $user_id
